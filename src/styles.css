@@ -316,3 +316,27 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 /* Match direct assignments with assignments linked to an Excel row. */
 .legacy-category-content>.legacy-items>.assigned-line{background:#0f1215}
 
+/* Dashboard metrics: modern system numerals and a neutral assigned accent. */
+.stat-number{font-family:Inter,"Segoe UI",system-ui,sans-serif;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.045em}
+.stat-icon.red{border-color:#344452;background:#1c2c38;color:#a6d0e3}
+
+/* Assignment table: give the item name room and remove its distracting unit code. */
+.assignments-table table{table-layout:fixed;min-width:900px}
+.assignments-table th:nth-child(1){width:18%}
+.assignments-table th:nth-child(2){width:25%}
+.assignments-table th:nth-child(3){width:14%}
+.assignments-table th:nth-child(4){width:17%}
+.assignments-table th:nth-child(5){width:13%}
+.assignments-table th:nth-child(6){width:13%}
+.assignments-table td{padding:13px 14px;line-height:1.4}
+.assignments-table td:first-child{min-width:0}
+.assignments-table .assignment-item-cell>b{display:block;color:#eef2f5;font-size:13px;line-height:1.35}
+.assignments-table .assignment-item-code{display:none}
+.assignments-table .assignment-item-cell .condition-badge{display:inline-flex;margin-top:6px}
+.assignments-table td:nth-child(3),.assignments-table td:nth-child(5){white-space:nowrap}
+
+.action-menu>summary{width:34px;min-width:34px;min-height:34px;padding:0;border-radius:8px;color:#b8c4cd}
+.action-menu>summary svg{width:17px;height:17px}
+
+.assignment-edit-button{color:#ed6b63;border-color:#633b3a;background:#2b1d20}
+.assignment-edit-button:hover{color:#ffaaa3;border-color:#9a514d;background:#3a2225}
