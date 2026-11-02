@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
-import { Activity, AlertTriangle, ArrowDownToLine, Boxes, ChevronDown, ChevronRight, ClipboardList, HardHat, LayoutDashboard, LogOut, Menu, MoreVertical, Pencil, Plus, Search, Shield, Shirt, Trash2, Users, X } from 'lucide-react';
+import { Activity, AlertTriangle, ArrowDownToLine, Boxes, ChevronDown, ChevronRight, ClipboardList, HardHat, LayoutDashboard, LogOut, Menu, Moon, MoreVertical, PanelLeftClose, PanelLeftOpen, Pencil, Plus, Search, Shield, Shirt, Sun, Trash2, Users, X } from 'lucide-react';
 import { conditionLabels, configured, supabase, type Condition } from './lib/supabase';
 import { parseLegacyWorkbook, type WorkbookPreview } from './lib/legacyWorkbook';
 import stationLogo from './assets/logo-cuartel.jpg';
@@ -72,6 +72,8 @@ export default function App() {
   const [accessState, setAccessState] = useState<'checking'|'authorized'|'denied'|'migration'|'error'>('checking');
   const [page, setPage] = useState<Page>('Dashboard');
   const [mobileNav, setMobileNav] = useState(false);
+  const [sidebarHidden, setSidebarHidden] = useState(() => window.localStorage.getItem('inventario-bomberos-sidebar-hidden') === 'true');
+  const [theme, setTheme] = useState<'dark'|'light'>(() => window.localStorage.getItem('inventario-bomberos-theme') === 'light' ? 'light' : 'dark');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -85,6 +87,8 @@ export default function App() {
   const [movements, setMovements] = useState<Movement[]>([]);
   const [showPreviousHistory,setShowPreviousHistory]=useState(false);
   const [historyBaseline]=useState(()=>{const key='inventario-bomberos-history-baseline';const saved=window.localStorage.getItem(key);if(saved)return saved;const now=new Date().toISOString();window.localStorage.setItem(key,now);return now;});
+  useEffect(()=>{window.localStorage.setItem('inventario-bomberos-sidebar-hidden',String(sidebarHidden));},[sidebarHidden]);
+  useEffect(()=>{window.localStorage.setItem('inventario-bomberos-theme',theme);},[theme]);
   const [legacyRows, setLegacyRows] = useState<Record<string,LegacyRow[]>>({});
   const [legacyReviews, setLegacyReviews] = useState<Record<string,LegacyRowReview>>({});
   const [legacyReviewSchemaReady, setLegacyReviewSchemaReady] = useState(false);
@@ -287,16 +291,16 @@ export default function App() {
     await mutate(async()=>{const {data,error}=await supabase!.rpc('reconcile_all_legacy_equipment',{p_confirmed:true});if(error)throw error;return data as Record<string,number>;},result=>`Sincronización verificada: ${result.physical_units_created} unidades nuevas; ${result.primary_rows_already_linked} filas ya vinculadas; ${result.rows_without_element_name} filas sin nombre quedaron pendientes.`);
   };
 
-  return <div className="app-shell">
-    <aside className={`sidebar ${mobileNav ? 'open' : ''}`}>
+  return <div className={`app-shell theme-${theme}`}>
+    <aside className={`sidebar ${mobileNav ? 'open' : ''} ${sidebarHidden ? 'sidebar-hidden' : ''}`}>
       <div className="brand"><div className="brand-mark"><img src={stationLogo} alt="Escudo de Bomberos Voluntarios de Corral de Bustos"/></div><div><strong>BOMBEROS VOLUNTARIOS</strong><span>Corral de Bustos · Inventario</span></div><button className="icon-button mobile-close" onClick={() => setMobileNav(false)} aria-label="Cerrar menú"><X size={18}/></button></div>
       <div className="section-label">MENÚ PRINCIPAL</div>
       <nav>{pages.map(({ name, icon: Icon }) => <button key={name} className={`nav-item ${page === name ? 'active' : ''}`} onClick={() => { setPage(name); setMobileNav(false); setSearch(''); }}><Icon size={18}/><span>{name}</span>{page === name && <span className="nav-dot"/>}</button>)}</nav>
       <div className="sidebar-bottom"><div className="connection"><span className="live-dot"/> Base de datos conectada</div><button className="nav-item logout" onClick={() => supabase!.auth.signOut()}><LogOut size={17}/>Cerrar sesión</button><div className="user-chip"><div className="avatar small">{session.user.email?.[0]?.toUpperCase()}</div><div><strong>{session.user.email?.split('@')[0]}</strong><span>Personal autorizado</span></div></div></div>
     </aside>
     {mobileNav && <button className="scrim" onClick={() => setMobileNav(false)} aria-label="Cerrar menú"/>}
-    <main className="main-area">
-      <header className="topbar"><button className="icon-button mobile-menu" onClick={() => setMobileNav(true)} aria-label="Abrir menú"><Menu size={20}/></button><div className="crumb">Cuartel <ChevronRight size={14}/><b>{page}</b></div><div className="topbar-right"><span className="today">{new Intl.DateTimeFormat('es-AR',{dateStyle:'long'}).format(new Date())}</span><div className="avatar">{session.user.email?.[0]?.toUpperCase()}</div></div></header>
+    <main className={`main-area ${sidebarHidden ? 'sidebar-hidden' : ''}`}>
+      <header className="topbar"><button className="icon-button desktop-sidebar-toggle" onClick={() => setSidebarHidden(value=>!value)} aria-label={sidebarHidden?'Mostrar menú lateral':'Ocultar menú lateral'} title={sidebarHidden?'Mostrar menú lateral':'Ocultar menú lateral'}>{sidebarHidden?<PanelLeftOpen size={19}/>:<PanelLeftClose size={19}/>}</button><button className="icon-button mobile-menu" onClick={() => {setSidebarHidden(false);setMobileNav(true);}} aria-label="Abrir menú"><Menu size={20}/></button><div className="crumb">Cuartel <ChevronRight size={14}/><b>{page}</b></div><div className="topbar-right"><button className="icon-button theme-toggle" onClick={()=>setTheme(value=>value==='dark'?'light':'dark')} aria-label={theme==='dark'?'Cambiar a modo claro':'Cambiar a modo oscuro'} title={theme==='dark'?'Cambiar a modo claro':'Cambiar a modo oscuro'}>{theme==='dark'?<Sun size={18}/>:<Moon size={18}/>}</button><span className="today">{new Intl.DateTimeFormat('es-AR',{dateStyle:'long'}).format(new Date())}</span><div className="avatar">{session.user.email?.[0]?.toUpperCase()}</div></div></header>
       <div className="content">
         {message && <div className={`notice ${message.includes('Error') || message.includes('violates') ? 'error' : ''}`} role="status">{message}<button onClick={() => setMessage('')} aria-label="Cerrar"><X size={15}/></button></div>}
         {loading ? <div className="loading"><span className="spinner"/>Cargando información…</div> : <>
